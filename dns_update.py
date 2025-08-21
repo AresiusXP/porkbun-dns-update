@@ -29,6 +29,7 @@ def edit_dns_record(api_key, secret_key, domain, id, record_type, name, content,
   try:
     response = requests.post(url, headers=headers, data=json.dumps(payload))
     response.raise_for_status()
+    log_message(f"Successfully edited DNS record for {name}.{domain}")
     return response.json()
   except requests.exceptions.RequestException as e:
     log_message(f"Error editing DNS record: {e}")
@@ -44,6 +45,7 @@ def get_dns_record(api_key, secret_key, domain, record_type, name):
   try:
     response = requests.post(url, headers=headers, data=json.dumps(payload))
     response.raise_for_status()
+    log_message(f"Successfully retrieved DNS record for {name}.{domain}")
     return response.json()
   except requests.exceptions.RequestException as e:
     log_message(f"Error retrieving DNS record: {e}")
@@ -63,6 +65,7 @@ def create_dns_record(api_key, secret_key, domain, record_type, name, content, t
   try:
     response = requests.post(url, headers=headers, data=json.dumps(payload))
     response.raise_for_status()
+    log_message(f"Successfully created DNS record for {name}.{domain}")
     return response.json()
   except requests.exceptions.RequestException as e:
     log_message(f"Error creating DNS record: {e}")
@@ -73,28 +76,34 @@ def get_public_ip():
   try:
     response = requests.get(url)
     response.raise_for_status()
-    return response.text
+    ip = response.text
+    log_message(f"Successfully retrieved public IP: {ip}")
+    return ip
   except requests.exceptions.RequestException as e:
     log_message(f"Error getting public IP: {e}")
     exit(1)
 
-current_public_ip = get_public_ip()
-record_type = 'A'
-content = current_public_ip
+def main():
+  current_public_ip = get_public_ip()
+  record_type = 'A'
+  content = current_public_ip
 
-for name in NAMES: 
-  response = get_dns_record(API_KEY, SECRET_KEY, DOMAIN, record_type, name)
+  for name in NAMES: 
+    response = get_dns_record(API_KEY, SECRET_KEY, DOMAIN, record_type, name)
 
-  if 'records' in response and response['records']:
-    if current_public_ip == response['records'][0]['content']:
-      log_message(f'{name} - IP address has not changed')
+    if 'records' in response and response['records']:
+      if current_public_ip == response['records'][0]['content']:
+        log_message(f'{name} - IP address has not changed')
+      else:
+        log_message(f'{name} - IP address has changed')
+        id = response['records'][0]['id']
+        response = edit_dns_record(API_KEY, SECRET_KEY, DOMAIN, id, record_type, name, content, TTL)
+        log_message(str(response))
     else:
-      log_message(f'{name} - IP address has changed')
-      id = response['records'][0]['id']
-      response = edit_dns_record(API_KEY, SECRET_KEY, DOMAIN, id, record_type, name, content, TTL)
+      log_message(f'{name} - No DNS record found')
+      log_message(f'{name} - Creating new DNS record')
+      response = create_dns_record(API_KEY, SECRET_KEY, DOMAIN, record_type, name, content, TTL)
       log_message(str(response))
-  else:
-    log_message(f'{name} - No DNS record found')
-    log_message(f'{name} - Creating new DNS record')
-    response = create_dns_record(API_KEY, SECRET_KEY, DOMAIN, record_type, name, content, TTL)
-    log_message(str(response))
+
+if __name__ == '__main__':
+  main()
