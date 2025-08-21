@@ -8,13 +8,6 @@ from datetime import datetime
 def log_message(message):
   print(f"{datetime.now().isoformat()} - {message}")
 
-load_dotenv()
-API_KEY = os.getenv('DNS_PORKBUN_KEY')
-SECRET_KEY = os.getenv('DNS_PORKBUN_SECRET')
-TTL = os.getenv('DNS_TTL', 300)
-NAMES = os.getenv('DNS_RECORDS').split(',')
-DOMAIN = os.getenv('DNS_DOMAIN')
-
 def edit_dns_record(api_key, secret_key, domain, id, record_type, name, content, ttl):
   url = f'https://api.porkbun.com/api/json/v3/dns/edit/{domain}/{id}'
   headers = {'Content-Type': 'application/json'}
@@ -82,8 +75,20 @@ def get_public_ip():
   except requests.exceptions.RequestException as e:
     log_message(f"Error getting public IP: {e}")
     exit(1)
-
+  
 def main():
+  load_dotenv()
+  API_KEY = os.getenv('DNS_PORKBUN_KEY')
+  SECRET_KEY = os.getenv('DNS_PORKBUN_SECRET')
+  TTL = os.getenv('DNS_TTL', 300)
+  DOMAIN = os.getenv('DNS_DOMAIN')
+  dns_records = os.getenv('DNS_RECORDS')
+
+  if not all([API_KEY, SECRET_KEY, DOMAIN, dns_records]):
+      log_message("Error: One or more required environment variables are not set.")
+      exit(1)
+  
+  NAMES = dns_records.split(',')
   current_public_ip = get_public_ip()
   record_type = 'A'
   content = current_public_ip
