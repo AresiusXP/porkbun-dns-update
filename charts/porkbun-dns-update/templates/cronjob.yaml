@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "porkbun-dns-update.fullname" . }}
+  labels:
+    {{- include "porkbun-dns-update.labels" . | nindent 4 }}
+spec:
+  schedule: "{{ .Values.cronjob.schedule }}"
+  successfulJobsHistoryLimit: {{ .Values.cronjob.successfulJobsHistoryLimit | default 3 }}
+  failedJobsHistoryLimit: {{ .Values.cronjob.failedJobsHistoryLimit | default 1 }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: {{ .Values.cronjob.restartPolicy | default "OnFailure" }}
+          containers:
+            - name: porkbun-dns-update
+              image: "{{ .Values.image.repository }}:{{ .Release.appVersion }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
+              env:
+                - name: DNS_PORKBUN_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.secretName }}
+                      key: dns_porkbun_key
+                - name: DNS_PORKBUN_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.secretName }}
+                      key: dns_porkbun_secret
+                - name: DNS_RECORDS
+                  value: {{ join "," .Values.dnsRecords }}
+                - name: DNS_DOMAIN
+                  value: {{ .Values.dnsDomain }}
+                - name: DNS_TTL
+                  value: {{ .Values.dnsTtl | quote }}
