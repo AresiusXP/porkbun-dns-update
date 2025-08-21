@@ -41,7 +41,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: GitHub Container Registry Docker Action
-        uses: trentjones21/github-docker@master
+      - name: Publish Image
+        uses: matootie/github-docker@v3.0.0
         with:
-          accessToken: ${{ secrets.PACKAGES_WRITE }}
+          accessToken: ${{ github.token }}
+          tag: |
+            latest
+            ${{ github.sha }}
+            
+      - name: Print Full Image URL
+        run: echo ${{ stets.publish.outputs.imageURL }}:${{ github.sha }}
