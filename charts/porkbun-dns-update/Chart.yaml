@@ -3,4 +3,4 @@ name: porkbun-dns-update
 description: A Helm chart for updating Porkbun DNS records with current public IP address.
 type: application
 version: 0.1.0
-appVersion: v1.0.0
+appVersion: "v1.0.1"
