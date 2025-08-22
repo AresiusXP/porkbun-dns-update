@@ -2,15 +2,15 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     tags:
-      - 'v*.*.*'
+      - "v*.*.*"
     paths-ignore:
-      - 'charts/**'
+      - "charts/**"
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths-ignore:
-      - 'charts/**'
+      - "charts/**"
 
 jobs:
   test:
@@ -83,15 +83,14 @@ jobs:
       - name: Update Chart.yaml appVersion
         run: |
           VERSION=${{ steps.extract_version.outputs.version }}
-          sed -i "s/^\(appVersion:\s*\).*/\1\"${VERSION}\"" charts/Chart.yaml
+          sed -i 's/^\(appVersion:\s*\).*/\1"'${VERSION}'"/' charts/porkbun-dns-update/Chart.yaml
 
       - name: Commit and push changes
         run: |
-          git add charts/Chart.yaml
+          git add charts/porkbun-dns-update/Chart.yaml
           if git diff --staged --quiet; then
             echo "No changes to commit."
           else
             git commit -m "ci: Update Helm chart appVersion to ${{ steps.extract_version.outputs.version }}"
             git push
           fi
-
