@@ -15,7 +15,7 @@ spec:
           restartPolicy: {{ .Values.cronjob.restartPolicy | default "OnFailure" }}
           containers:
             - name: porkbun-dns-update
-              image: "{{ .Values.image.repository }}:{{ .Release.appVersion }}"
+              image: "{{ .Values.image.repository }}:{{ .Chart.appVersion }}"
               imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
               env:
                 - name: DNS_PORKBUN_KEY
