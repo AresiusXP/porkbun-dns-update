@@ -52,7 +52,7 @@ jobs:
 
       - name: Publish Image
         id: publish
-        uses: matootie/github-docker@v3.0.0
+        uses: matootie/github-docker@v3.1.0
         with:
           accessToken: ${{ secrets.PACKAGES_WRITE }}
           tag: ${{ steps.extract_tag.outputs.tag }}
