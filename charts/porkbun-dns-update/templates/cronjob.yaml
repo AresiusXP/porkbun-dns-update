@@ -13,6 +13,10 @@ spec:
       template:
         spec:
           restartPolicy: {{ .Values.cronjob.restartPolicy | default "OnFailure" }}
+          dnsConfig:
+            options:
+              - name: ndots
+                value: "1"
           containers:
             - name: porkbun-dns-update
               image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
